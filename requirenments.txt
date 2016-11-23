@@ -1,0 +1,2 @@
+RPi.GPIO==0.6.2
+python-telegram-bot==5.1.1
