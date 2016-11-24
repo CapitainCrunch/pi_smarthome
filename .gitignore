@@ -93,3 +93,4 @@ config.py
 pi/
 
 *.db
+.idea/
