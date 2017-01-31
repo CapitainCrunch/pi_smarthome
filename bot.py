@@ -114,6 +114,11 @@ def get_torrent_file_and_download(bot, update):
     fpath = os.path.abspath(fname)
     if url.startswith('magnet'):
         fpath = url
+    elif update.message.document:
+        file_id = update.message.document.file_id
+        torrent_file = bot.getFile(file_id)
+        tc = transmissionrpc.Client()
+        fpath = torrent_file.file_path
     else:
         with open(fname, 'wb') as out_stream:
             req = requests.get(url, stream=True)
@@ -125,17 +130,6 @@ def get_torrent_file_and_download(bot, update):
     bot.sendMessage(uid, 'Начинаю скачивать <b>' + tname + '</b>', parse_mode=ParseMode.HTML,
                     reply_markup=ReplyKeyboardMarkup(start_keyboard, resize_keyboard=True))
     os.remove(fpath)
-
-
-def download_torrent(bot, update):
-    uid = update.message.from_user.id
-    file_id = update.message.document.file_id
-    torrent_file = bot.getFile(file_id)
-    tc = transmissionrpc.Client()
-    added_torrent = tc.add_torrent(torrent_file.file_path)
-    tname = added_torrent._fields['name'][0]
-    bot.sendMessage(uid, 'Начинаю скачивать <b>' + tname + '</b>', parse_mode=ParseMode.HTML,
-                    reply_markup=ReplyKeyboardMarkup(start_keyboard, resize_keyboard=True))
 
 
 def torrents(bot, update):
@@ -165,7 +159,6 @@ def handle_torrent(bot, update):
     uid = update.message.from_user.id
     message = update.message.text.strip('/')
     cmd, torrent_id = message.split('_')
-
     tc = transmissionrpc.Client()
     if cmd == 'start':
         tc.start_torrent(torrent_id)
@@ -203,10 +196,9 @@ if __name__ == '__main__':
     checking = threading.Thread(target=check_torrents, args=(bot,), name='check_torrents').start()
     dp = updater.dispatcher
     dp.add_handler(CommandHandler('start', start))
-    dp.add_handler(MessageHandler([Filters.entity(MessageEntity.URL)], get_torrent_file_and_download))
+    dp.add_handler(MessageHandler([Filters.entity(MessageEntity.URL) | Filters.document], get_torrent_file_and_download))
     dp.add_handler(RegexHandler('^Торренты$', torrents))
     dp.add_handler(RegexHandler('^/\w+_\d+', handle_torrent))
-    dp.add_handler(MessageHandler([Filters.document], download_torrent))
     # dp.add_handler(RegexHandler('^Температура$', temperature))
     # dp.add_handler(RegexHandler('^.*лампу$', lamp))
     # dp.add_handler(RegexHandler('^.*розетку', socket))
