@@ -172,7 +172,7 @@ def check_torrents(bot):
     tc = transmissionrpc.Client()
     while True:
         for t in tc.get_torrents():
-            if t.status == 'complete':
+            if t.status in ('seed pending', 'seeding'):
                 bot.sendMessage(ADMIN_ID, 'Скачал ' + t.name)
             time.sleep(60)
 
