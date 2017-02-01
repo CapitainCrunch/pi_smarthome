@@ -1,10 +1,12 @@
-import RPi.GPIO as GPIO
-from DHT11 import dht11
-from telegram import ReplyKeyboardMarkup, ParseMode, Emoji, ForceReply, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardHide
-from telegram.ext import Updater, CommandHandler, RegexHandler, CallbackQueryHandler
-from tokens import PI_SMARTHOME, ADMIN_ID
 import logging
 import sqlite3
+
+import RPi.GPIO as GPIO
+from telegram import ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
+
+import dht11
+from config import PI_SMARTHOME
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -138,8 +140,6 @@ def off(thing):
     return thing + ' Включил'
 
 
-
-
 def procces_value(bot, update):
     query = update.callback_query
     uid = query.from_user.id
@@ -170,10 +170,6 @@ def procces_value(bot, update):
         bot.editMessageText(chat_id=uid, message_id=query.message.message_id,
                             text='Выбери комнату',
                             reply_markup=InlineKeyboardMarkup(get_keyboard()))
-
-
-
-
 
 
 updater = Updater(PI_SMARTHOME)
